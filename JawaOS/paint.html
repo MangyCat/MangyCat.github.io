@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>paint</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #FFFFFF;
+            display: flex;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-right: 1px solid #000;
+        }
+        .color-button {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            border: 1px solid #000;
+        }
+        .canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid #000;
+            width: 350px;
+            height: 270px;
+        }
+        .erase-button {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background-color: #4c00ff;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="color-button" style="background-color: black;" onclick="changeColor('black')"></div>
+        <div class="color-button" style="background-color: red;" onclick="changeColor('red')"></div>
+        <div class="color-button" style="background-color: blue;" onclick="changeColor('blue')"></div>
+        <div class="color-button" style="background-color: green;" onclick="changeColor('green')"></div>
+        <div class="color-button" style="background-color: yellow;" onclick="changeColor('yellow')"></div>
+        <div class="color-button" style="background-color: purple;" onclick="changeColor('purple')"></div>
+        <div class="color-button" style="background-color: orange;" onclick="changeColor('orange')"></div>
+        <div class="color-button" style="background-color: brown;" onclick="changeColor('brown')"></div>
+        <div class="erase-button" onclick="eraseCanvas()">🗑️</div>
+    </div>
+    <div class="canvas-container">
+        <canvas id="paintCanvas" width="350" height="270"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let color = 'black';
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath(); //Made by LemonGravy 2025
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = color;
+
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        function changeColor(newColor) {
+            color = newColor;
+        }
+
+        function eraseCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+    </script>
+</body>
+</html>

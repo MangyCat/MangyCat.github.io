@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>notepad</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #F0F0F0;
+            border-bottom: 1px solid #CCC;
+        }
+        .textarea {
+            width: 100%;
+            height: calc(100vh - 40px);
+            border: none;
+            padding: 10px;
+            box-sizing: border-box;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+        }
+        .select {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <label for="fontSelect">Select Font:</label>
+        <select id="fontSelect" class="select" onchange="changeFont()">
+            <option value="'Courier New', Courier, monospace">Courier New</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Times New Roman, Times, serif">Times New Roman</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+        </select>
+    </div>
+    <textarea class="textarea" id="textarea" placeholder="Type your notes here..."></textarea>
+
+    <script> //Made by LemonGravy 2025
+        function changeFont() {
+            const fontSelect = document.getElementById('fontSelect');
+            const textarea = document.getElementById('textarea');
+            textarea.style.fontFamily = fontSelect.value;
+        }
+    </script>
+</body>
+</html>

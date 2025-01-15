@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> 
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <script> //Q: Why is the computer always beating me? A: It's minimax ai, you either lose to it or draw
+        let board = [
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', '']
+        ];
+        let w; // width of each cell
+        let h; // height of each cell
+        let currentPlayer = 'X';
+
+        function setup() {
+            createCanvas(400, 300);
+            w = width / 3;
+            h = height / 3;
+        }
+
+        function mousePressed() {
+            if (currentPlayer === 'X') {
+                let x = floor(mouseX / w);
+                let y = floor(mouseY / h);
+                if (board[y][x] === '') {
+                    board[y][x] = currentPlayer;
+                    currentPlayer = 'O';
+                    nextTurn();
+                }
+            }
+        }
+
+        function nextTurn() {
+            if (currentPlayer === 'O') {
+                let bestScore = -Infinity;
+                let move;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (board[i][j] === '') {
+                            board[i][j] = 'O';
+                            let score = minimax(board, 0, false); //Made by LemonGravy 2025
+                            board[i][j] = '';
+                            if (score > bestScore) {
+                                bestScore = score;
+                                move = { i, j };
+                            }
+                        }
+                    }
+                }
+                if (move) {
+                    board[move.i][move.j] = 'O';
+                    currentPlayer = 'X';
+                }
+            }
+        }
+
+        function minimax(board, depth, isMaximizingPlayer) {
+            let result = checkWinner();
+            if (result !== null) return score(result);
+
+            if (isMaximizingPlayer) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (board[i][j] === '') {
+                            board[i][j] = 'O';
+                            let score = minimax(board, depth + 1, false);
+                            board[i][j] = '';
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (board[i][j] === '') {
+                            board[i][j] = 'X';
+                            let score = minimax(board, depth + 1, true);
+                            board[i][j] = '';
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function score(result) {
+            if (result === 'X') return -10;
+            if (result === 'O') return 10;
+            return 0;
+        }
+
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (board[Math.floor(a / 3)][a % 3] && 
+                    board[Math.floor(a / 3)][a % 3] === board[Math.floor(b / 3)][b % 3] && 
+                    board[Math.floor(a / 3)][a % 3] === board[Math.floor(c / 3)][c % 3]) {
+                    return board[Math.floor(a / 3)][a % 3];
+                }
+            }
+
+            if (board.every(row => row.every(cell => cell !== ''))) {
+                return 'Draw';
+            }
+
+            return null;
+        }
+
+        function draw() {
+            background(255);
+            strokeWeight(4);
+
+            // Draw the grid
+            for (let i = 1; i < 3; i++) {
+                line(w * i, 0, w * i, height);
+                line(0, h * i, width, h * i);
+            }
+
+            // Draw X and O
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let x = w * j + w / 2;
+                    let y = h * i + h / 2;
+                    let spot = board[i][j];
+                    textSize(32);
+                    let r = w / 4;
+                    if (spot === 'O') {
+                        noFill();
+                        ellipse(x, y, r * 2);
+                    } else if (spot === 'X') {
+                        line(x - r, y - r, x + r, y + r);
+                        line(x + r, y - r, x - r, y + r);
+                    }
+                }
+            }
+
+            let result = checkWinner();
+            if (result !== null) {
+                noLoop();
+                createP(result).style('font-size', '32pt').style('color', '#000').style('text-align', 'center');
+            }
+        }
+    </script>
+</body>
+</html>

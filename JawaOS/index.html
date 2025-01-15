@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>JawaOS</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .desktop {
+      width: 100vw;
+      height: 100vh;
+      background-color: #1C5D99;
+      position: relative;
+      overflow: hidden;
+    }
+    .taskbar {
+      width: 100%;
+      height: 40px;
+      background-color: #CCCCCC;
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between; 
+    }
+    .start-section {
+      display: flex;
+      align-items: center;
+    }
+    .start-button {
+      background-color: #C0C0C0;
+      border: 2px solid #888888;
+      padding: 5px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    .separator {
+      width: 2px;
+      height: 80%;
+      background-color: #888888;
+      margin: 0 5px;
+    }
+    .start-menu {
+      display: none;
+      position: absolute;
+      bottom: 40px;
+      left: 10px;
+      width: 200px;
+      background-color: #FFFFFF;
+      border: 2px solid #888888;
+      padding: 10px;
+    }
+    .start-menu button {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .clock {
+      margin-right: 10px;
+    }
+    .window {
+      width: 400px;
+      height: 300px;
+      background-color: #FFFFFF;
+      border: 2px solid #000;
+      position: absolute;
+      top: 50px;
+      left: 50px;
+      display: none;
+      flex-direction: column;
+      cursor: move;
+    }
+    .window-header {
+      background-color: #0051ff;
+      color: #FFFFFF;
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: grab;
+    }
+    .window-body {
+      padding: 0;
+      flex-grow: 1;
+    }
+    .close-button {
+      background-color: #ff4444;
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      padding: 2px 5px;
+    }
+    .taskbar-program {
+      margin-left: 5px;
+      padding: 5px;
+      border: 2px solid #888888;
+      background-color: #C0C0C0;
+      cursor: pointer;
+    }
+    .taskbar-programs {
+      display: flex;
+      align-items: center;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="desktop">
+    <div class="taskbar">
+      <div class="start-section">
+        <div class="start-button" onclick="toggleStartMenu()">Start</div>
+        <div class="separator"></div>
+        <div class="taskbar-programs" id="taskbarPrograms"></div>
+      </div>
+      <div class="clock" id="clock"></div>
+    </div>
+    <div class="start-menu" id="startMenu">
+      <button onclick="openProgram('credits')">📜 Credits</button>
+      <button onclick="openProgram('notepad')">📝 Notepad</button>
+      <button onclick="openProgram('calculator')">📝 Calculator</button>
+      <button onclick="openProgram('paint')">🎨 Painting</button>
+      <button onclick="openProgram('tictactoe')">🎰 Impossible Tic Tac Toe</button>
+    </div>
+    <div class="window" id="credits">
+      <div class="window-header" onmousedown="dragMouseDown(event, 'credits')">
+        <span>Credits</span>
+        <button class="close-button" onclick="closeProgram('credits')">X</button>
+      </div>
+      <div class="window-body">
+        <iframe src="credits.html" scrolling="no"></iframe>
+      </div>
+    </div>
+    <div class="window" id="notepad">
+      <div class="window-header" onmousedown="dragMouseDown(event, 'notepad')">
+        <span>Notepad</span>
+        <button class="close-button" onclick="closeProgram('notepad')">X</button>
+      </div>
+      <div class="window-body">
+        <iframe src="notepad.html"></iframe>
+      </div>
+    </div>
+    <div class="window" id="calculator">
+      <div class="window-header" onmousedown="dragMouseDown(event, 'calculator')">
+        <span>Calculator</span>
+        <button class="close-button" onclick="closeProgram('calculator')">X</button>
+      </div>
+      <div class="window-body">
+        <iframe src="calculator.html" scrolling="no"></iframe>
+      </div>
+    </div>
+    <div class="window" id="paint">
+      <div class="window-header" onmousedown="dragMouseDown(event, 'paint')">
+        <span>Paint</span>
+        <button class="close-button" onclick="closeProgram('paint')">X</button>
+      </div>
+      <div class="window-body">
+        <iframe src="paint.html" scrolling="no"></iframe>
+      </div>
+    </div>
+    <div class="window" id="tictactoe">
+      <div class="window-header" onmousedown="dragMouseDown(event, 'tictactoe')">
+        <span>Impossible tic tac toe</span>
+        <button class="close-button" onclick="closeProgram('tictactoe')">X</button>
+      </div>
+      <div class="window-body">
+        <iframe src="tictactoe.html" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+  <script> //No need to mess around here, its foundation for the program
+    function toggleStartMenu() {
+      const startMenu = document.getElementById('startMenu');
+      startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function openProgram(program) {
+      document.getElementById(program).style.display = 'flex';
+      addToTaskbar(program);
+      document.getElementById('startMenu').style.display = 'none';
+    }
+    
+    function closeProgram(program) {
+      document.getElementById(program).style.display = 'none';
+      removeFromTaskbar(program);
+    }
+
+    function addToTaskbar(program) {
+      const taskbarPrograms = document.getElementById('taskbarPrograms');
+      if (!document.getElementById(`taskbar-${program}`)) {
+        const programButton = document.createElement('div');
+        programButton.id = `taskbar-${program}`;
+        programButton.className = 'taskbar-program';
+        programButton.innerText = program.charAt(0).toUpperCase() + program.slice(1);
+        programButton.onclick = () => openProgram(program);
+        taskbarPrograms.appendChild(programButton);
+      }
+    }
+
+    function removeFromTaskbar(program) {
+      const taskbarButton = document.getElementById(`taskbar-${program}`);
+      if (taskbarButton) {
+        taskbarButton.remove();
+      }
+    }
+
+    let offsetX = 0, offsetY = 0, dragTarget = null;
+
+    function dragMouseDown(e, id) {
+      dragTarget = document.getElementById(id);
+      offsetX = e.clientX - dragTarget.offsetLeft;
+      offsetY = e.clientY - dragTarget.offsetTop;
+      document.onmousemove = elementDrag;
+      document.onmouseup = stopDragElement;
+    }
+
+    function elementDrag(e) {
+      if (!dragTarget) return;
+      const desktop = document.querySelector('.desktop');
+      const desktopRect = desktop.getBoundingClientRect();
+      let newLeft = e.clientX - offsetX;
+      let newTop = e.clientY - offsetY;
+
+      // ensure window doesnt escape into the abyss
+      newLeft = Math.max(0, Math.min(newLeft, desktopRect.width - dragTarget.offsetWidth));
+      newTop = Math.max(0, Math.min(newTop, desktopRect.height - dragTarget.offsetHeight));
+
+      dragTarget.style.left = newLeft + 'px';
+      dragTarget.style.top = newTop + 'px';
+    }
+
+    function stopDragElement() {
+      document.onmousemove = null;
+      document.onmouseup = null;
+      dragTarget = null;
+    }
+
+    function updateClock() { //idk just looked cool, clock? you got it sir
+      const clock = document.getElementById('clock');
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      clock.innerText = `${hours}:${minutes}`;
+    }
+
+    setInterval(updateClock, 2500); //no need to rush so increased from 1000ms to 2500ms 
+    updateClock();
+  </script>
+</body>
+</html>
+
+
