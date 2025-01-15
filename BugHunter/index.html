@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bughunter V1.0</title>
+    <style>
+        body {
+            background-image: url("sky.jpg"); /* sky background */
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .bug {
+            position: absolute;
+            width: 100px; height: 120px; /* updated size */
+            background-size: cover;
+            cursor: pointer;
+            transition: opacity 0.5s ease-out; /* gradient fade */
+        }
+        .bug-1 { background-image: url('bug1.png'); }
+        .bug-2 { background-image: url('bug2.png'); }
+        .bug-3 { background-image: url('bug3.png'); }
+        .fade-out {
+            opacity: 0;
+        }
+
+        .celebration {
+            display: none;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 2em; /* big text */
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px; /* rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* a bit of shadow */
+        }
+
+        .celebration img {
+            width: 384px; height: 384px; /* updated size */
+        }
+
+        .credits-btn {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(75, 0, 105, 0.5); /* 50% opaque */
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 2em;
+            font-family: Arial, sans-serif;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .credits-prompt {
+            display: none;
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            background-color: rgba(53, 168, 105, 0.9); /* 90% opaque */
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="celebration">
+        Nice 🎉<br>
+        <img src="emoji.jpg" alt="smiley">
+    </div>
+
+    <div class="credits-btn" onclick="toggleCredits()">Credits</div>
+
+    <div class="credits-prompt">
+        Created by LemonGravy 🐞 | Special thanks to Pinterest, MyInstants & clipart<br>
+    <br> 
+        Music: Scheming Weasel 🎶 <br>
+        2025 and more updates coming soon! <br>
+        <i>Inspect element for easter eggs and source code</i>
+    </div>
+
+    <script>
+        let ambientSound, swatSound, celebrationSound;
+        let bugCount = 10;
+        const safeMargin = 70; // safe margin to stay within display, like a border, the more bigger the more they're crammed 
+        const bufferZone = 10; // prevent bugs from spiralling out of control and hitting the wall at 120hz
+        const cooldown = 200; // mentioned by bufferzone comment, 2 in 1
+
+        // Initialize sounds but don't play them yet
+        function initializeSounds() {
+            ambientSound = new Audio('ambience.mp3');
+            ambientSound.loop = true;
+            
+            swatSound = new Audio('swat.mp3'); // i am going to devastate you, its a duck sound not a swat
+            celebrationSound = new Audio('celebration.mp3'); // yippieeee
+        }
+
+        // Random bugs with random speed, random type (bee,beetle,fly), and random location
+        function createBug() {
+            const bug = document.createElement('div');
+            const bugTypes = ['bug-1', 'bug-2', 'bug-3'];
+            const randomType = bugTypes[Math.floor(Math.random() * bugTypes.length)];
+            bug.classList.add('bug',randomType);
+            bug.style.top = (Math.random() * (window.innerHeight - safeMargin * 2)) + safeMargin + 'px';
+            bug.style.left = (Math.random() * (window.innerWidth - safeMargin * 2)) + safeMargin + 'px';
+
+            bug.dataset.speedX = (Math.random() - 0.5) * 10;
+            bug.dataset.speedY = (Math.random() - 0.5) * 10;
+            bug.dataset.lastBounce = Date.now();
+            document.body.appendChild(bug);
+
+            moveBug(bug);
+        }
+
+        // Move bug with collision detection and turning towards direction, so little was said, yet much had to be written
+        function moveBug(bug) {
+            let posX = parseFloat(bug.style.left);
+            let posY = parseFloat(bug.style.top);
+            let speedX = parseFloat(bug.dataset.speedX);
+            let speedY = parseFloat(bug.dataset.speedY);
+
+            function updatePosition() {
+                posX += speedX;
+                posY += speedY;
+
+                const now = Date.now();
+                if (now - bug.dataset.lastBounce > cooldown) { // we do a little debouncing
+                    if (posX <= safeMargin + bufferZone || posX >= window.innerWidth - safeMargin - 100 - bufferZone) { // bounce off edges
+                        speedX *= -1;
+                        bug.dataset.lastBounce = now;
+                    }
+                    if (posY <= safeMargin + bufferZone || posY >= window.innerHeight - safeMargin - 120 - bufferZone) { // buffer zone
+                        speedY *= -1;
+                        bug.dataset.lastBounce = now;
+                    }
+                }
+
+                bug.style.left = posX + 'px';
+                bug.style.top = posY + 'px';
+                bug.style.transform = `rotate(${Math.atan2(speedY, speedX) * 180 / Math.PI + 90}deg)`; // offset by 90 degrees, easier way is to rotate the jpg manually
+                bug.dataset.speedX = speedX;
+                bug.dataset.speedY = speedY;
+
+                requestAnimationFrame(updatePosition);
+            }
+
+            requestAnimationFrame(updatePosition);
+        }
+
+        // birth the bugs (around 10, sometimes 11)
+        for (let i = 0; i < bugCount; i++) {
+            createBug();
+        }
+
+        // https://developer.chrome.com/blog/autoplay/ :( but good for ad riddled websites
+        function startPlayingSounds() {
+            ambientSound.play();
+            document.removeEventListener('click', startPlayingSounds);
+            document.removeEventListener('keydown', startPlayingSounds);
+        }
+
+        // part of autoplay fixing
+        document.addEventListener('click', function(event) {
+            if (!ambientSound) {
+                initializeSounds();
+                startPlayingSounds();
+            }
+
+            // bug disappear function
+            let bug = event.target;
+            if (bug.classList.contains('bug')) {
+                bug.classList.add('fade-out');
+                setTimeout(() => {
+                    swatSound.play(); // POV: you're bug and this is the last sound you hear before going into the abyss
+                    bug.remove();
+                }, 500);
+                bugCount--;
+
+                if (bugCount === 0) {
+                    document.querySelector('.celebration').style.display = 'block';
+                    celebrationSound.play(); // hoorahhh
+                }
+            }
+        });
+
+        // toggle credit visibility
+        function toggleCredits() {
+            const creditsPrompt = document.querySelector('.credits-prompt');
+            if (creditsPrompt.style.display === 'none' || creditsPrompt.style.display === '') {
+                creditsPrompt.style.display = 'block';
+            } else {
+                creditsPrompt.style.display = 'none';
+            }
+        }
+
+        //start sounds with also a keydown except clicking also refers to autoplay a couple lines above
+        document.addEventListener('keydown', startPlayingSounds);
+    </script>
+</body>
+</html>
