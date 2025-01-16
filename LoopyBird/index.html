@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoopyBird</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: url('wallpaper.webp') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        canvas {
+            display: block;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: black;
+        }
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: black;
+            background: rgba(255, 24, 24, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="startScreen">Press any key to start</div>
+    <canvas></canvas>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>  <!-- needed to save best score locally -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let birdY, birdSpeed, pipes, score, gameOver, bestScore, gravity;
+        const birdX = canvas.width / 4, pipeWidth = 60, gap = 200, pipeSpeed = 2;
+
+        const birdImg = new Image();
+        birdImg.src = 'bird.png'; // you can customize bird, just find picture on google of flappy bird sprite and make sure its transparent
+        const pipeImg = new Image();
+        pipeImg.src = 'pipe.png';  // photoshopped it to make a double sided pipe so no need to add extra code for adding a top pipe sprite
+        const bgImg = new Image();
+        bgImg.src = 'wallpaper.webp';  // customizable 1920x1080 if you're thinking of forking this to be compatible with phone just use 9:16 wallpaper
+
+        const sounds = {
+            flap: Array(30).fill().map(() => new Audio('flap.mp3')),  // osu sound used because cool
+            score: Array(10).fill().map(() => new Audio('score.mp3')),  // classic ding sound. Array is used to play same sound multiple times at the same time without delaying or breaking
+            hit: Array(5).fill().map(() => new Audio('hit.mp3'))  // tf2 critical hit sound, myinstants is a very nice platform to find sounds
+        };
+        let soundIndex = { flap: 0, score: 0, hit: 0 };
+
+        function playSound(type) {
+            sounds[type][soundIndex[type]].play();
+            soundIndex[type] = (soundIndex[type] + 1) % sounds[type].length;
+        }
+
+        function init() {
+            birdY = canvas.height / 2; //display compatibility, even works on my phone!
+            birdSpeed = 0;
+            pipes = [];
+            score = 0;
+            gameOver = false;
+            gravity = 0.5; //the higher the more sensitive, chaotic, 0.2 is slow but uncontrollable.
+            $('#score').text('Score: 0');
+        }
+
+        $(document).keydown(() => {
+            if (!gameOver) {
+                birdSpeed = -6; //same as mousedown just key instead of mouse
+                playSound('flap');
+            } else {
+                restartGame();
+            }
+        });
+        $(document).mousedown(() => {
+            if (!gameOver) {
+                birdSpeed = -6; //psuedocode: if gameover is false then send birdspeed to -6 and play sound
+                playSound('flap');
+            } else {
+                restartGame(); //however if true restart game
+            }
+        });
+        function createPipe() {
+            const pipeY = Math.random() * (canvas.height - gap - 100) + 50;
+            pipes.push({ x: canvas.width, y: pipeY, scored: false });
+        }
+        setInterval(createPipe, 2000);
+
+        function update() {
+            if (!gameOver) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+                birdY += birdSpeed;
+                birdSpeed += gravity;
+
+                const rotation = Math.min(Math.max(birdSpeed / 10, -1), 1);
+
+                ctx.save(); //this is called yawning, makes the bird more realistic
+                ctx.translate(birdX, birdY);
+                ctx.rotate(rotation);
+                ctx.drawImage(birdImg, -20, -15, 40, 30);
+                ctx.restore();
+
+                pipes.forEach(pipe => {
+                    pipe.x -= pipeSpeed;
+                    ctx.drawImage(pipeImg, pipe.x, pipe.y - canvas.height, pipeWidth, canvas.height);
+                    ctx.drawImage(pipeImg, pipe.x, pipe.y + gap, pipeWidth, canvas.height);
+
+                    if ((birdX < pipe.x + pipeWidth && birdX + 40 > pipe.x &&
+                         (birdY < pipe.y || birdY + 30 > pipe.y + gap)) || birdY + 30 > canvas.height) {
+                        playSound('hit'); // bird hitting metal pipe detector
+
+                        gameOver = true;
+                        showGameOver();
+                    }
+
+                    if (pipe.x + pipeWidth < birdX && !pipe.scored) {
+                        score++;
+                        playSound('score'); //good ending
+                        $('#score').text('Score: ' + score);
+                        pipe.scored = true;
+                    }
+                });
+            }
+            requestAnimationFrame(update);
+        }
+
+        function showGameOver() {
+            bestScore = Math.max(score, Cookies.get('bestScore') || 0);
+            Cookies.set('bestScore', bestScore); //the important thing
+            Toastify({ text: `Game Over! Your score: ${score}\nBest score: ${bestScore}`, //this toast SLAYS over alert()
+                 duration: 5000,
+                  gravity: "bottom",
+                   position: "center",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                     stopOnFocus: true }).showToast();
+            $('#startScreen').show();
+        }
+
+        function restartGame() {
+            init();
+            $('#startScreen').hide();
+        }
+
+        $(document).keydown(() => {
+            if ($('#startScreen').is(':visible')) {
+                $('#startScreen').hide(); //spacebar is too hard to press multiple times without fatigue so i mapped it to every button
+                requestAnimationFrame(update);
+            }
+        });
+        $(document).mousedown(() => {
+            if ($('#startScreen').is(':visible')) {
+                $('#startScreen').hide(); //important for mobile compatibility or mouse clicking!
+                requestAnimationFrame(update);
+            }
+        });
+        init();
+        $('#startScreen').show();
+    </script>
+</body>
