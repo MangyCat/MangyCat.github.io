@@ -1,5 +1,5 @@
 //can be ngrok url, anything, jsut that it connects to backend port in some shape or form at the end of the day
-const backendUrl = 'http://leaderboard-backend-xi.vercel.app'
+const backendUrl = 'https://leaderboard-backend-xi.vercel.app'
 
 // submit score
 async function submitScore() {//spam if you hate tacos
