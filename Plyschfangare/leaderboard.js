@@ -4,8 +4,7 @@ const backendUrl = 'https://leaderboard-backend-xi.vercel.app';
 // submit score
 async function submitScore() { //spam if you hate tacos
     const name = document.getElementById('player-name').value;
-    const score = document.getElementById('player-score').value; // make sure to get the score input value
-    if (!name || score === null) {
+    if (!name || typeof score === 'undefined') { // check if score is defined
         alert('Enter a name and get a score to be submitted');
         return;
     }
