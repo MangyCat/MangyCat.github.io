@@ -1,23 +1,25 @@
-//can be ngrok url, anything, jsut that it connects to backend port in some shape or form at the end of the day
-const backendUrl = 'https://leaderboard-backend-xi.vercel.app'
+//can be ngrok url, anything, just that it connects to backend port in some shape or form at the end of the day
+const backendUrl = 'https://leaderboard-backend-xi.vercel.app';
 
 // submit score
-async function submitScore() {//spam if you hate tacos
+async function submitScore() { //spam if you hate tacos
     const name = document.getElementById('player-name').value;
-    if (!name || score === null) { 
+    const score = document.getElementById('player-score').value; // make sure to get the score input value
+    if (!name || score === null) {
         alert('Enter a name and get a score to be submitted');
         return;
     }
 
-    const response = await fetch(`${backendUrl}/submit-score`, {//send data
+    const response = await fetch(`${backendUrl}/submit-score`, { //send data
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*' // Add this header
         },
         body: JSON.stringify({ name, score })
     });
 
-    if (response.ok) {//error checking
+    if (response.ok) { //error checking
         alert('Score submitted!');
         loadLeaderboard();
     } else {
@@ -27,7 +29,13 @@ async function submitScore() {//spam if you hate tacos
 
 // load leaderboard
 async function loadLeaderboard() {
-    const response = await fetch(`${backendUrl}/leaderboard`);
+    const response = await fetch(`${backendUrl}/leaderboard`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*' // Add this header
+        }
+    });
     const leaderboard = await response.json();
 
     const leaderboardList = document.getElementById('leaderboardList');
@@ -46,7 +54,7 @@ function openLeaderboard() {
     loadLeaderboard();
 }
 
-//closes
+// closes
 function closeLeaderboard() {
     document.getElementById('leaderboard').style.display = 'none';
 }
