@@ -12,9 +12,9 @@ async function submitScore() { //spam if you hate tacos
 
     const response = await fetch(`${backendUrl}/submit-score`, { //send data
         method: 'POST',
+        mode: 'no-cors', // Add this line
         headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*' // Add this header
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name, score })
     });
@@ -31,21 +31,26 @@ async function submitScore() { //spam if you hate tacos
 async function loadLeaderboard() {
     const response = await fetch(`${backendUrl}/leaderboard`, {
         method: 'GET',
+        mode: 'no-cors', // Add this line
         headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*' // Add this header
+            'Content-Type': 'application/json'
         }
     });
-    const leaderboard = await response.json();
 
-    const leaderboardList = document.getElementById('leaderboardList');
-    leaderboardList.innerHTML = '';
+    // Handle the response based on the mode
+    if (response.ok) {
+        const leaderboard = await response.json();
+        const leaderboardList = document.getElementById('leaderboardList');
+        leaderboardList.innerHTML = '';
 
-    leaderboard.forEach(player => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${player.name}: ${player.score}`;
-        leaderboardList.appendChild(listItem);
-    });
+        leaderboard.forEach(player => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${player.name}: ${player.score}`;
+            leaderboardList.appendChild(listItem);
+        });
+    } else {
+        console.error('Error loading leaderboard:', response.status);
+    }
 }
 
 // ui open leaderboard
