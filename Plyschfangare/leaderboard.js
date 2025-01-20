@@ -1,5 +1,5 @@
 //can be ngrok url, anything, just that it connects to backend port in some shape or form at the end of the day
-const backendUrl = 'https://clean-bananas-sit.loca.lt';
+const backendUrl = 'https://hff1bx-ip-31-217-43-75.tunnelmole.net';
 
 // submit score
 async function submitScore() { //spam if you hate tacos
