@@ -10,46 +10,53 @@ async function submitScore() { //spam if you hate tacos
         return;
     }
 
-    const response = await fetch(`${backendUrl}/submit-score`, { //send data
-        method: 'POST',
-        mode: 'no-cors', // Add this line
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, score })
-    });
+    try {
+        const response = await fetch(`${backendUrl}/submit-score`, { //send data
+            method: 'POST',
+            mode: 'no-cors', // Add this line
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, score })
+        });
 
-    if (response.ok) { //error checking
-        alert('Score submitted!');
-        loadLeaderboard();
-    } else {
-        alert('Error submitting score.');
+        if (response.ok) { //error checking
+            alert('Score submitted!');
+            loadLeaderboard();
+        } else {
+            alert('Error submitting score.');
+        }
+    } catch (error) {
+        console.error('Error submitting score:', error);
     }
 }
 
 // load leaderboard
 async function loadLeaderboard() {
-    const response = await fetch(`${backendUrl}/leaderboard`, {
-        method: 'GET',
-        mode: 'no-cors', // Add this line
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-
-    // Handle the response based on the mode
-    if (response.ok) {
-        const leaderboard = await response.json();
-        const leaderboardList = document.getElementById('leaderboardList');
-        leaderboardList.innerHTML = '';
-
-        leaderboard.forEach(player => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${player.name}: ${player.score}`;
-            leaderboardList.appendChild(listItem);
+    try {
+        const response = await fetch(`${backendUrl}/leaderboard`, {
+            method: 'GET',
+            mode: 'no-cors', // Add this line
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
-    } else {
-        console.error('Error loading leaderboard:', response.status);
+
+        if (response.ok) {
+            const leaderboard = await response.json();
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            leaderboard.forEach(player => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${player.name}: ${player.score}`;
+                leaderboardList.appendChild(listItem);
+            });
+        } else {
+            console.error('Error loading leaderboard:', response.status);
+        }
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
     }
 }
 
