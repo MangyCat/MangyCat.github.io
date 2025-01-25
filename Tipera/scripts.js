@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     quoteModeButton.addEventListener("click", () => {
-        fetchSentenceFromQuotes
+        fetchSentenceFromQuotes();
     });
     wordInput.addEventListener('input', () => {
         const typedText = wordInput.value;
